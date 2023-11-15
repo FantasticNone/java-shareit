@@ -2,7 +2,7 @@ package ru.practicum.shareit.user.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.exception.EmailIsAlreadyRegisteredException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.*;
@@ -11,54 +11,35 @@ import java.util.*;
 @Component
 @Slf4j
 public class UserRepositoryImpl implements UserRepository {
-
     private final Map<Long, User> users = new HashMap<>();
-    private final Set<String> uniqueEmailsSet = new HashSet<>();
-    private int userId = 0;
+    private static int userId = 0;
 
     @Override
     public User create(User user) {
-        log.debug("Creating user: {}", user);
         user.setId(++userId);
-        if (!uniqueEmailsSet.add(user.getEmail())) {
-            --userId;
-            throw new EmailIsAlreadyRegisteredException("User with this email is already exists!");
-        }
         users.put(user.getId(), user);
-        return users.get(user.getId());
+        log.debug("Creating user: {}", user);
+        return user;
     }
 
     @Override
-    public User getById(long id) {
-        log.debug("Getting User by ID: {}", id);
-        return users.get(id);
+    public Optional<User> getById(long userId) {
+        log.debug("Getting User by ID: {}", userId);
+        return Optional.ofNullable(users.get(userId));
     }
 
     @Override
-    public Collection<User> getAll() {
+    public List<User> getAll() {
         log.debug("Getting all users");
         return new ArrayList<>(users.values());
     }
 
     @Override
-    public User update(User user) {
-        if (!user.getEmail().equals(users.get(user.getId()).getEmail())) {
-            if (uniqueEmailsSet.add(user.getEmail())) {
-                uniqueEmailsSet.remove(users.get(user.getId()).getEmail());
-            } else {
-                throw new EmailIsAlreadyRegisteredException("User with this email is already exists!");
-            }
+    public void delete(long userId) {
+        log.debug("Removing User with id : {}", userId);
+        if (!users.containsKey(userId)) {
+            throw new NotFoundException(String.format("Invalid user id ", User.class));
         }
-        log.debug("Updating user with id: {}, user: {}", user.getId(), user);
-
-        users.put(user.getId(), user);
-        return users.get(user.getId());
-    }
-
-    @Override
-    public void delete(long id) {
-        log.debug("Removing User with id : {}", id);
-        uniqueEmailsSet.remove(users.get(id).getEmail());
-        users.remove(id);
+        users.remove(userId);
     }
 }

@@ -3,20 +3,17 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.EmptyFieldException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.GatewayException;
+import ru.practicum.shareit.exception.NotOwnerException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
-
-import static ru.practicum.shareit.item.dto.mapper.ItemMapper.*;
 
 @Service
 @Slf4j
@@ -28,66 +25,58 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto create(ItemDto itemDto, long userId) {
-        checkingUserId(userId);
-        if (itemDto.getAvailable() == null || itemDto.getDescription() == null || itemDto.getName() == null) {
-            throw new EmptyFieldException("Null fields in ItemDto.");
-        }
-        if (itemDto.getName().isEmpty() || itemDto.getDescription().isEmpty()) {
-            throw new EmptyFieldException("Empty fields in ItemDto.");
-        }
         log.debug("Creating item : {}; for user {}", itemDto, userId);
-        return toItemDto(itemRepository.create(toItem(itemDto), userId));
+        userService.getById(userId);
+        return ItemMapper.toItemDto(itemRepository.create(ItemMapper.toItem(itemDto), userId));
     }
 
     @Override
-    public ItemDto update(ItemDto itemDto, long userId) {
-        checkingUserId(userId);
-        checkingItemId(itemDto.getId());
-        log.debug("Updating item : {}; for user {}", itemDto, userId);
-        return toItemDto(itemRepository.update(toItemUpdate(itemDto, itemRepository
-                .getItemById(itemDto.getId())), userId));
+    public ItemDto update(long itemId, ItemDto itemDto, long userId) {
+        userService.getById(userId);
+        Item item = itemRepository.getItemById(itemId).orElseThrow(() ->
+                new NotFoundException(String.format("Object of class %s not found", Item.class)));
+        String name = itemDto.getName();
+        String description = itemDto.getDescription();
+        Boolean available = itemDto.getAvailable();
+        if (item.getOwner() == userId) {
+            if (name != null && !name.isBlank()) {
+                item.setName(name);
+            }
+            if (description != null && !description.isBlank()) {
+                item.setDescription(description);
+            }
+            if (available != null) {
+                item.setAvailable(available);
+            }
+        } else {
+            throw new NotOwnerException(String.format("Owner id is incorrect!",
+                    userId, name));
+        }
+        log.debug("Updating item : {}; for user {}", item, userId);
+        return ItemMapper.toItemDto(item);
     }
 
     @Override
-    public ItemDto getItemById(long itemId, long userId) {
-        checkingUserId(userId);
-        checkingItemId(itemId);
-        log.debug("Getting item by id : {}; for user {}", itemId, userId);
-        return toItemDto(itemRepository.getItemById(itemId));
+    public ItemDto getItemById(long itemId) {
+        log.debug("Getting item by id : {} ", itemId);
+        Item item = itemRepository.getItemById(itemId).orElseThrow(() ->
+                new NotFoundException(String.format("Object of class %s not found", Item.class)));
+        return ItemMapper.toItemDto(item);
     }
 
     @Override
-    public Collection<ItemDto> getItemsByUserId(long userId) {
-        checkingUserId(userId);
+    public List<ItemDto> getItemsByUserId(long userId) {
         log.debug("Getting items by user Id : {} ", userId);
-        return itemRepository.getItemsByUserId(userId).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+        userService.getById(userId);
+        return itemRepository.getItemsByUserId(userId).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
     @Override
-    public Collection<ItemDto> getItemsBySearch(String text) {
-        if (text.isEmpty()) {
-            return new ArrayList<>();
-        }
+    public List<ItemDto> getItemsBySearch(String text) {
         log.debug("Getting items by search : {} ", text);
-        return itemRepository.getItemsBySearch(text.toLowerCase()).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
-    }
-
-    private void checkingUserId(long userId) {
-        if (userId == -1) {
-            throw new GatewayException("There is no user with header-Id : " + userId);
+        if (text.isBlank()) {
+            return Collections.emptyList();
         }
-        if (userService.getAll().stream().map(UserDto::getId).noneMatch(x -> x.equals(userId))) {
-            throw new NotFoundException("There is no user with Id : " + userId);
-        }
-    }
-
-    private void checkingItemId(long itemId) {
-        if (itemRepository.getItemById(itemId) == null) {
-            throw new NotFoundException("There is no Item with Id: " + itemId);
-        }
+        return itemRepository.getItemsBySearch(text).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 }
