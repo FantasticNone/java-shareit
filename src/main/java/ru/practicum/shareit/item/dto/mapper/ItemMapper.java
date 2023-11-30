@@ -1,27 +1,36 @@
 package ru.practicum.shareit.item.dto.mapper;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoIn;
+import ru.practicum.shareit.item.dto.ItemDtoOut;
+import ru.practicum.shareit.item.dto.ItemDtoShort;
 import ru.practicum.shareit.item.model.Item;
-
+import ru.practicum.shareit.user.dto.UserMapper;
 
 @UtilityClass
 public class ItemMapper {
-
-    public static ItemDto toItemDto(Item item) {
-        return ItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .available(item.getAvailable())
-                .build();
+    public ItemDtoOut toItemDtoOut(Item item) {
+        return new ItemDtoOut(
+                item.getId(),
+                item.getName(),
+                item.getDescription(),
+                item.getAvailable(),
+                UserMapper.toUserDtoShort(item.getOwner())
+        );
     }
 
-    public static Item toItem(ItemDto itemDto) {
-        return Item.builder()
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .available(itemDto.getAvailable())
-                .build();
+    public ItemDtoShort toItemDtoShort(Item item) {
+        return new ItemDtoShort(
+                item.getId(),
+                item.getName()
+        );
+    }
+
+    public Item toItem(ItemDtoIn itemDtoIn) {
+        return new Item(
+                itemDtoIn.getName(),
+                itemDtoIn.getDescription(),
+                itemDtoIn.getAvailable()
+        );
     }
 }
