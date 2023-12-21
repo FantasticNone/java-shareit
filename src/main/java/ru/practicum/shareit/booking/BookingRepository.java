@@ -14,13 +14,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findAllByBooker_Id(Long bookerId, Sort sort);
 
-    List<Booking> findAllByItem_Owner_Id(Long ownerId);
+    //List<Booking> findAllByItem_Owner_Id(Long ownerId);
 
-    @Query("select b from Booking b " +
+    /*@Query("select b from Booking b " +
             "where b.item.id = :itemId " +
-            "AND b.booker.id = :bookerId "+
+            "AND b.booker.id = :bookerId " +
             "AND b.end <= :now")
-    List<Booking> findAllByUserIdAndItemIdAndEndDateIsPassed(Long bookerId, Long itemId, LocalDateTime now);
+    List<Booking> findAllByUserIdAndItemIdAndEndDateIsPassed(Long bookerId, Long itemId, LocalDateTime now);*/
 
     @Query("select b from Booking b " +
             "where b.item.id " +
@@ -98,5 +98,4 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "and b.start > current_timestamp " +
             "order by b.start asc")
     List<Booking> findNextBookingByBookerId(Long bookerId, Sort startDate);
-
 }
