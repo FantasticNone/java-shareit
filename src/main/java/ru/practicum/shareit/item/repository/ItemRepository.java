@@ -12,7 +12,9 @@ import java.util.List;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByOwner(User owner, Sort sort);
+
     List<Item> findItemsByAvailableTrueAndNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description);
+
     @Query("SELECT COUNT(b) > 0 FROM Booking b " +
             "WHERE b.item.id = :itemId " +
             "AND b.booker.id = :userId " +
