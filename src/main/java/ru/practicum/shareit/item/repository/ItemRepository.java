@@ -7,7 +7,6 @@ import org.springframework.data.repository.query.Param;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
-import java.security.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
