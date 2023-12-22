@@ -34,9 +34,12 @@ public class ErrorHandler {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler
+    @ExceptionHandler ({MethodArgumentNotValidException.class,
+                        ItemBookingException.class,
+                        BadRequestException.class,
+                        DataException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidateException(final MethodArgumentNotValidException e) {
+    public ErrorResponse handleValidateException(final Exception e) {
         log.debug("Получен статус 400 Bad Request {}", e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
