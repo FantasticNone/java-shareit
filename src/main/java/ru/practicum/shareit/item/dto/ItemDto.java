@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.lang.Nullable;
@@ -13,19 +12,18 @@ import java.util.List;
 
 @Builder
 @Data
-@AllArgsConstructor
 public class ItemDto {
 
-    private final Long id;
+    private Long id;
 
     @NotBlank(groups = {Marker.Create.class})
-    private final String name;
+    private String name;
 
     @NotBlank(groups = {Marker.Create.class})
-    private final String description;
+    private String description;
 
     @NotNull(groups = {Marker.Create.class})
-    private final Boolean available;
+    private Boolean available;
 
     @Nullable
     private Long userId;
@@ -39,6 +37,4 @@ public class ItemDto {
     @Nullable
     private List<CommentDto> comments;
 
-    @Nullable
-    private Long requestId;
 }

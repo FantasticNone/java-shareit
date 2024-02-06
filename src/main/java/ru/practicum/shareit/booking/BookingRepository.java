@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,19 +14,13 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    List<Booking> findAllByBooker_Id(Long bookerId, Sort sort);
+    List<Booking> findAllByBookerId(Long bookerId, Sort sort);
 
-    //List<Booking> findAllByItem_Owner_Id(Long ownerId);
+    boolean existsByItemAndBookerAndEndIsBefore(Item item, User user, LocalDateTime now);
 
-    /*@Query("select b from Booking b " +
-            "where b.item.id = :itemId " +
-            "AND b.booker.id = :bookerId " +
-            "AND b.end <= :now")
-    List<Booking> findAllByUserIdAndItemIdAndEndDateIsPassed(Long bookerId, Long itemId, LocalDateTime now);*/
-
-    @Query("select b from Booking b " +
-            "where b.item.id " +
-            "IN :itemsIds")
+    @Query("select b " +
+            "from Booking b " +
+            "where b.item.id IN :itemsIds")
     List<Booking> findAllByOwnerItems(List<Long> itemsIds, Sort sort);
 
     @Query("select b from Booking b " +
@@ -87,15 +83,4 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByBookerIdAndPastStatus(Long bookerId, LocalDateTime now, Sort sort);
 
     List<Booking> findAllByItem_IdIn(List<Long> itemIds, Sort sort);
-
-    @Query("select b from Booking b " +
-            "where b.booker.id = :bookerId " +
-            "order by b.end desc")
-    List<Booking> findLastBookingByBookerId(Long bookerId, Sort endDate);
-
-    @Query("select b from Booking b " +
-            "where b.booker.id = :bookerId " +
-            "and b.start > current_timestamp " +
-            "order by b.start asc")
-    List<Booking> findNextBookingByBookerId(Long bookerId, Sort startDate);
 }

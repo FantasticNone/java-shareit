@@ -24,32 +24,33 @@ public class ItemController {
     @PostMapping
     public ItemDto createItem(@Validated(Marker.Create.class) @RequestBody ItemDto itemDto,
                               @RequestHeader(USER_ID) long userId) {
-        log.debug("Creating item {}", itemDto);
+        log.info("Creating item {}", itemDto);
         return itemService.create(itemDto, userId);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@PathVariable long itemId, @RequestBody ItemDto itemDto,
                               @RequestHeader(USER_ID) long userId) {
-        log.debug("Updating item by id {}", itemId);
+        log.info("Updating item by id {}", itemId);
         return itemService.update(itemId, itemDto, userId);
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable Long itemId, @RequestHeader(USER_ID) long userId) {
-        log.debug("Getting item by id : {}", itemId);
+    public ItemDto getItemById(@PathVariable Long itemId,
+                               @RequestHeader(USER_ID) long userId) {
+        log.info("GET \"items/{}\" Header \"X-Sharer-User-Id\"={}", itemId, userId);
         return itemService.getItemById(itemId, userId);
     }
 
     @GetMapping()
     public List<ItemDto> getUserItems(@RequestHeader(USER_ID) long userId) {
-        log.debug("Getting all items by userId {}", userId);
+        log.info("Getting all items by userId {}", userId);
         return itemService.getItemsByUserId(userId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> getItemsBySearch(String text) {
-        log.debug("Getting items by search text: {}", text);
+        log.info("Getting items by search text: {}", text);
         return itemService.getItemsBySearch(text);
     }
 
@@ -57,7 +58,7 @@ public class ItemController {
     public CommentDto postComment(@RequestHeader(USER_ID) long userId,
                                   @PathVariable long itemId,
                                   @Valid @RequestBody CommentDto commentDto) {
-        log.debug("Posting comment from user id {} to item id {}", userId, itemId);
+        log.info("Posting comment from user id {} to item id {}", userId, itemId);
         return itemService.postComment(userId, itemId, commentDto);
     }
 }

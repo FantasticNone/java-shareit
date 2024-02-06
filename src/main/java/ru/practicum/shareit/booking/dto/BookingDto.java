@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.utils.Marker;
 
 import javax.validation.constraints.Future;
@@ -16,8 +18,11 @@ public class BookingDto {
     @Null(groups = Marker.Update.class)
     private Long id;
 
-    private Long itemId;
-    private Long bookerId;
+    @Null(groups = Marker.Create.class)
+    private UserDto booker;
+
+    @NotNull(groups = Marker.Create.class)
+    private ItemDto item;
 
     @NotNull(groups = Marker.Create.class)
     @FutureOrPresent(groups = Marker.Create.class)

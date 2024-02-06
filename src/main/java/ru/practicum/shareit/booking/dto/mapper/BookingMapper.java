@@ -18,19 +18,12 @@ public class BookingMapper {
                 .start(booking.getStart())
                 .end(booking.getEnd())
                 .status(booking.getStatus().toString())
-                .bookerId(UserMapper.toUserDto(booking.getBooker()).getId())
-                .itemId(ItemMapper.toItemDto(booking.getItem()).getId())
+                .booker(UserMapper.toUserDto(booking.getBooker()))
+                .item(ItemMapper.toItemDto(booking.getItem()))
                 .build();
     }
 
     public List<BookingDto> responseDtoListOf(List<Booking> bookings) {
         return bookings.stream().map(BookingMapper::responseDtoOf).collect(Collectors.toList());
-    }
-
-    public BookingShortDto shortResponseDtoOf(Booking booking) {
-        return BookingShortDto.builder()
-                .id(booking.getId())
-                .bookerId(booking.getBooker().getId())
-                .build();
     }
 }

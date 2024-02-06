@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.user.model.User;
 
-import java.security.Timestamp;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -20,5 +20,5 @@ public class ItemRequest {
 
     private User user;
 
-    private Timestamp created;
+    private LocalDateTime created;
 }
