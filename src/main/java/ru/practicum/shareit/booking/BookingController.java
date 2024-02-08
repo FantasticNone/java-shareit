@@ -46,13 +46,13 @@ public class BookingController {
     public List<BookingDto> getAllByUser(@RequestHeader(USER_ID) Long userId,
                                          @RequestParam(defaultValue = "ALL") String state) {
         log.info("Getting all user bookings", state, userId);
-        return bookingService.getAllByUser(userId, state);
+        return bookingService.getAllByUser(userId, BookingState.getEnumByString(state));
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getAllByOwner(@RequestHeader(USER_ID) Long userId,
                                           @RequestParam(defaultValue = "ALL") String state) {
         log.info("Getting all owner bookings", state, userId);
-        return bookingService.getAllByOwner(userId, state);
+        return bookingService.getAllByOwner(userId, BookingState.getEnumByString(state));
     }
 }

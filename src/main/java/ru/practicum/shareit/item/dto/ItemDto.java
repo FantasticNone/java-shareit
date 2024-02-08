@@ -4,10 +4,8 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.lang.Nullable;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
-import ru.practicum.shareit.user.utils.Marker;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @Builder
@@ -16,13 +14,12 @@ public class ItemDto {
 
     private Long id;
 
-    @NotBlank(groups = {Marker.Create.class})
+    @Size(max = 30, message = "The name must be no more than 30 characters")
     private String name;
 
-    @NotBlank(groups = {Marker.Create.class})
+    @Size(max = 255, message = "The description must be no more than 255 characters")
     private String description;
 
-    @NotNull(groups = {Marker.Create.class})
     private Boolean available;
 
     @Nullable

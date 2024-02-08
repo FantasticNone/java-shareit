@@ -1,13 +1,15 @@
 package ru.practicum.shareit.item.dto.mapper;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.model.Comment;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@UtilityClass
 public class CommentMapper {
-    public static CommentDto responseDtoOf(Comment comment) {
+    public CommentDto responseDtoOf(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())
@@ -16,7 +18,7 @@ public class CommentMapper {
                 .build();
     }
 
-    public static List<CommentDto> listOfComments(List<Comment> comments) {
+    public List<CommentDto> listOfComments(List<Comment> comments) {
         return comments.stream().map(CommentMapper::responseDtoOf).collect(Collectors.toList());
     }
 }

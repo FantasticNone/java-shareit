@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemRequestDto;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.utils.Marker;
 
@@ -22,14 +24,14 @@ public class ItemController {
     private static final String USER_ID = "X-Sharer-User-Id";
 
     @PostMapping
-    public ItemDto createItem(@Validated(Marker.Create.class) @RequestBody ItemDto itemDto,
+    public ItemDto createItem(@Validated(Marker.Create.class)  @RequestBody ItemRequestDto itemDto,
                               @RequestHeader(USER_ID) long userId) {
         log.info("Creating item {}", itemDto);
         return itemService.create(itemDto, userId);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@PathVariable long itemId, @RequestBody ItemDto itemDto,
+    public ItemDto updateItem(@PathVariable long itemId, @Validated(Marker.Create.class) @RequestBody ItemDto itemDto,
                               @RequestHeader(USER_ID) long userId) {
         log.info("Updating item by id {}", itemId);
         return itemService.update(itemId, itemDto, userId);
@@ -57,8 +59,8 @@ public class ItemController {
     @PostMapping("/{itemId}/comment")
     public CommentDto postComment(@RequestHeader(USER_ID) long userId,
                                   @PathVariable long itemId,
-                                  @Valid @RequestBody CommentDto commentDto) {
+                                  @Valid @RequestBody CommentRequestDto commentRequestDto) {
         log.info("Posting comment from user id {} to item id {}", userId, itemId);
-        return itemService.postComment(userId, itemId, commentDto);
+        return itemService.postComment(userId, itemId, commentRequestDto);
     }
 }

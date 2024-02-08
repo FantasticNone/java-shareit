@@ -4,19 +4,19 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findAllByBookerId(Long bookerId, Sort sort);
 
     boolean existsByItemAndBookerAndEndIsBefore(Item item, User user, LocalDateTime now);
+
+    //List<Booking> findAllByStartAfterAndStatusNotAndStatus(LocalDateTime now, List<BookingStatus> rejected, BookingStatus approved);
 
     @Query("select b " +
             "from Booking b " +
@@ -83,4 +83,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByBookerIdAndPastStatus(Long bookerId, LocalDateTime now, Sort sort);
 
     List<Booking> findAllByItem_IdIn(List<Long> itemIds, Sort sort);
+
+    @Query("select b from Booking b " +
+            "where b.item.id IN :itemIds " +
+            "and b.status = 'APPROVED'")
+    List<Booking> findApprovedByItems(List<Long> itemIds);
 }

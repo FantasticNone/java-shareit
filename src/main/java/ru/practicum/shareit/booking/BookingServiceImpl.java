@@ -36,10 +36,6 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingDto create(BookingRequestDto bookingRequestDto) {
 
-        if (bookingRequestDto.getStart().isAfter(bookingRequestDto.getEnd()) ||
-                bookingRequestDto.getStart().isEqual(bookingRequestDto.getEnd()))
-            throw new DataException("Data is incorrect");
-
         User user = userRepository.findById(bookingRequestDto.getId())
                 .orElseThrow(() -> new NotFoundException("User not found"));
         Item item = itemRepository.findById(bookingRequestDto.getItemId())
@@ -76,12 +72,12 @@ public class BookingServiceImpl implements BookingService {
 
         if (booking.getStatus().equals(WAITING) && booking.getItem().getAvailable()) {
 
-        if (approved) {
-            booking.setStatus(APPROVED);
-        } else {
-            booking.setStatus(REJECTED);
-        }
-        bookingRepository.save(booking);
+            if (approved) {
+                booking.setStatus(APPROVED);
+            } else {
+                booking.setStatus(REJECTED);
+            }
+            bookingRepository.save(booking);
         } else {
             throw new BadRequestException("Only WAITING can be approved or rejected");
         }
@@ -104,29 +100,29 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDto> getAllByUser(Long userId, String state) {
+    public List<BookingDto> getAllByUser(Long userId, BookingState state) {
         User booker = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User is not found"));
 
         List<Booking> bookings;
 
         switch (state) {
-            case "ALL":
+            case ALL:
                 bookings = bookingRepository.findAllByBookerId(userId, SORT_BY_START_DESC);
                 break;
-            case "CURRENT":
+            case CURRENT:
                 bookings = bookingRepository.findAllByBookerIdAndCurrentStatus(userId, LocalDateTime.now(), SORT_BY_START_DESC);
                 break;
-            case "FUTURE":
+            case FUTURE:
                 bookings = bookingRepository.findAllByBookerIdAndFutureStatus(userId, LocalDateTime.now(), SORT_BY_START_DESC);
                 break;
-            case "PAST":
+            case PAST:
                 bookings = bookingRepository.findAllByBookerIdAndPastStatus(userId, LocalDateTime.now(), SORT_BY_START_DESC);
                 break;
-            case "WAITING":
+            case WAITING:
                 bookings = bookingRepository.findAllByBookerIdAndWaitingStatus(userId, BookingStatus.WAITING, SORT_BY_START_DESC);
                 break;
-            case "REJECTED":
+            case REJECTED:
                 bookings = bookingRepository.findAllByBookerIdAndRejectedStatus(userId, Collections.singletonList(BookingStatus.REJECTED), SORT_BY_START_DESC);
                 break;
             default:
@@ -138,12 +134,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDto> getAllByOwner(Long userId, String state) {
+    public List<BookingDto> getAllByOwner(Long userId, BookingState state) {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User is not found"));
 
-        Optional<List<Item>> userItemsOptional = Optional.ofNullable(itemRepository.findByOwner(owner, Sort.by(Sort.Direction.ASC, "id")));
-        List<Item> userItems = userItemsOptional.orElseThrow(() -> new DataException("User has no items"));
+        List<Item> userItems = itemRepository.findByOwner(owner, Sort.by(Sort.Direction.ASC, "id"));
+
         if (userItems.size() < 1) {
             throw new DataException("User has less than 1, minimum 1 item required");
         }
@@ -152,22 +148,22 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> bookings;
 
         switch (state) {
-            case "ALL":
+            case ALL:
                 bookings = bookingRepository.findAllByOwnerItems(userItemsIds, SORT_BY_START_DESC);
                 break;
-            case "CURRENT":
+            case CURRENT:
                 bookings = bookingRepository.findAllByOwnerItemsAndCurrentStatus(userItemsIds, LocalDateTime.now(), SORT_BY_START_DESC);
                 break;
-            case "FUTURE":
+            case FUTURE:
                 bookings = bookingRepository.findAllByOwnerItemsAndFutureStatus(userItemsIds, LocalDateTime.now(), SORT_BY_START_DESC);
                 break;
-            case "PAST":
+            case PAST:
                 bookings = bookingRepository.findAllByOwnerItemsAndPastStatus(userItemsIds, LocalDateTime.now(), SORT_BY_START_DESC);
                 break;
-            case "WAITING":
+            case WAITING:
                 bookings = bookingRepository.findAllByOwnerItemsAndWaitingStatus(userItemsIds, BookingStatus.WAITING, SORT_BY_START_DESC);
                 break;
-            case "REJECTED":
+            case REJECTED:
                 bookings = bookingRepository.findAllByOwnerItemsAndRejectedStatus(userItemsIds, List.of(BookingStatus.REJECTED, BookingStatus.CANCELED), SORT_BY_START_DESC);
                 break;
             default:
