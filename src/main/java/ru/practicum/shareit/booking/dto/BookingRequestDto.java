@@ -14,11 +14,8 @@ import java.time.LocalDateTime;
 @StartBeforeEndDateValid
 public class BookingRequestDto {
     private Long id;
-    @NotNull
     @FutureOrPresent
     private LocalDateTime start;
-    @NotNull
-    @Future
     private LocalDateTime end;
     @NotNull
     private Long itemId;

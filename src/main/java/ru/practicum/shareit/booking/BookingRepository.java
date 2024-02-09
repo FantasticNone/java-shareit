@@ -16,8 +16,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     boolean existsByItemAndBookerAndEndIsBefore(Item item, User user, LocalDateTime now);
 
-    //List<Booking> findAllByStartAfterAndStatusNotAndStatus(LocalDateTime now, List<BookingStatus> rejected, BookingStatus approved);
-
     @Query("select b " +
             "from Booking b " +
             "where b.item.id IN :itemsIds")

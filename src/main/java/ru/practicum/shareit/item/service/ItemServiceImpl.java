@@ -54,18 +54,18 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public ItemDto update(long itemId, ItemDto itemDto, long userId) {
+    public ItemDto update(long itemId, ItemRequestDto itemRequestDto, long userId) {
         log.debug("Updating item with id: {} for user {}", itemId, userId);
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Item not found"));
         if (item.getOwner().getId() == userId) {
-            if (itemDto.getName() != null && !itemDto.getName().isBlank()) {
-                item.setName(itemDto.getName());
+            if (itemRequestDto.getName() != null && !itemRequestDto.getName().isBlank()) {
+                item.setName(itemRequestDto.getName());
             }
-            if (itemDto.getDescription() != null && !itemDto.getDescription().isBlank()) {
-                item.setDescription(itemDto.getDescription());
+            if (itemRequestDto.getDescription() != null && !itemRequestDto.getDescription().isBlank()) {
+                item.setDescription(itemRequestDto.getDescription());
             }
-            if (itemDto.getAvailable() != null) {
-                item.setAvailable(itemDto.getAvailable());
+            if (itemRequestDto.getAvailable() != null) {
+                item.setAvailable(itemRequestDto.getAvailable());
             }
             Item updatedItem = itemRepository.save(item);
             return ItemMapper.toItemDto(updatedItem);

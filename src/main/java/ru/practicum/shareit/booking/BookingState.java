@@ -11,12 +11,11 @@ public enum BookingState {
     REJECTED;
 
     public static BookingState getEnumByString(String value) {
-        BookingState bookingState;
-        try {
-            bookingState = BookingState.valueOf(value);
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Unknown state: " + value);
+        for (BookingState state : BookingState.values()) {
+            if (value.equalsIgnoreCase(state.name())) {
+                return state;
+            }
         }
-        return bookingState;
+        throw new BadRequestException("Unknown state: " + value);
     }
 }

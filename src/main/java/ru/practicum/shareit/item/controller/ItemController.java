@@ -31,10 +31,10 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@PathVariable long itemId, @Validated(Marker.Create.class) @RequestBody ItemDto itemDto,
+    public ItemDto updateItem(@PathVariable long itemId, @Validated(Marker.Update.class) @RequestBody ItemRequestDto itemRequestDto,
                               @RequestHeader(USER_ID) long userId) {
         log.info("Updating item by id {}", itemId);
-        return itemService.update(itemId, itemDto, userId);
+        return itemService.update(itemId, itemRequestDto, userId);
     }
 
     @GetMapping("/{itemId}")
