@@ -34,9 +34,12 @@ public class ErrorHandler {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler
+    @ExceptionHandler ({MethodArgumentNotValidException.class,
+                        ItemBookingException.class,
+                        BadRequestException.class,
+                        DataException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidateException(final MethodArgumentNotValidException e) {
+    public ErrorResponse handleValidateException(final Exception e) {
         log.debug("Получен статус 400 Bad Request {}", e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
@@ -51,7 +54,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(final Throwable e) {
-        log.debug("Получен статус 500 Internal Server Error {}", e.getMessage(), e);
+        log.error("Получен статус 500 Internal Server Error {}", e.getMessage(), e);
         return new ErrorResponse("Internal Server Error");
     }
 }

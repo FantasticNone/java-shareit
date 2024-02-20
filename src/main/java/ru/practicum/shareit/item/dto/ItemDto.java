@@ -1,26 +1,34 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.shareit.user.utils.Marker;
+import org.springframework.lang.Nullable;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Builder
 @Data
-@AllArgsConstructor
 public class ItemDto {
 
-    private final Long id;
+    private Long id;
 
-    @NotBlank(groups = {Marker.Create.class})
-    private final String name;
+    private String name;
 
-    @NotBlank(groups = {Marker.Create.class})
-    private final String description;
+    private String description;
 
-    @NotNull(groups = {Marker.Create.class})
-    private final Boolean available;
+    private Boolean available;
+
+    @Nullable
+    private Long userId;
+
+    @Nullable
+    private BookingShortDto lastBooking;
+
+    @Nullable
+    private BookingShortDto nextBooking;
+
+    @Nullable
+    private List<CommentDto> comments;
+
 }

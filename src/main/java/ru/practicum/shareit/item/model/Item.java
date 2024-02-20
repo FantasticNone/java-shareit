@@ -1,26 +1,39 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import ru.practicum.shareit.user.utils.Marker;
+import lombok.*;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.user.model.User;
 
-import javax.validation.constraints.NotBlank;
+import javax.persistence.*;
+import java.util.List;
 
-@Data
 @Builder
+@Getter
+@Setter
+@Entity
+@Table(name = "items")
 @AllArgsConstructor
+@NoArgsConstructor
 public class Item {
 
-    private long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @NotBlank(groups = {Marker.Update.class})
     private String name;
 
-    @NotBlank(groups = {Marker.Update.class})
     private String description;
 
+    @Column(name = "is_available")
     private Boolean available;
 
-    private long owner;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Booking> bookings;
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Comment> comments;
 }
