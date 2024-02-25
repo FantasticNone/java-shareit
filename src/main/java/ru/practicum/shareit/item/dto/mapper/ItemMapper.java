@@ -3,9 +3,10 @@ package ru.practicum.shareit.item.dto.mapper;
 import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemRequestDto;
+import ru.practicum.shareit.item.dto.ItemDtoMarker;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.model.ItemRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +26,27 @@ public class ItemMapper {
                 .build();
     }
 
-    public Item toItem(ItemRequestDto itemDto) {
+    public Item toItem(ItemDtoMarker itemDto) {
         return Item.builder()
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
                 .available(itemDto.getAvailable())
                 .build();
+    }
+
+    public ItemDtoMarker toItemDtoMarker(Item item) {
+        ItemDtoMarker itemDtoMarker = ItemDtoMarker.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .build();
+        ItemRequest itemRequest = item.getRequest();
+        if (itemRequest != null) {
+            Long requestId = itemRequest.getId();
+            itemDtoMarker.setRequestId(requestId);
+        }
+        return itemDtoMarker;
     }
 
     private List<CommentDto> mapCommentEntitiesToDtos(List<Comment> comments) {

@@ -1,13 +1,11 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.request.model;
 
 import lombok.*;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -17,15 +15,19 @@ import java.util.List;
 @Table(name = "requests")
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
 public class ItemRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
+
+    @NotBlank
     private String description;
+
     @ManyToOne
-    @JoinColumn(name = "requestor_id")
-    private User requestor;
-    private LocalDateTime created;;
+    @JoinColumn(name = "requester_id", referencedColumnName = "id")
+    private User requester;
+
+    private LocalDateTime created;
+
 }

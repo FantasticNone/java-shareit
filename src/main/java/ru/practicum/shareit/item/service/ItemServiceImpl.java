@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,13 +15,15 @@ import ru.practicum.shareit.exception.NotOwnerException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemRequestDto;
+import ru.practicum.shareit.item.dto.ItemDtoMarker;
 import ru.practicum.shareit.item.dto.mapper.CommentMapper;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -38,23 +41,25 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
+    private final ItemRequestRepository requestRepository;
 
     @Override
     @Transactional
-    public ItemDto create(ItemRequestDto itemDto, long userId) {
-        log.debug("Creating item: {}; for user {}", itemDto, userId);
+    public ItemDtoMarker create(ItemDtoMarker itemDtoMarker, long userId) {
+        log.debug("Creating item: {}; for user {}", itemDtoMarker, userId);
 
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new NotFoundException("User not found"));
-        Item item = ItemMapper.toItem(itemDto);
+        Item item = ItemMapper.toItem(itemDtoMarker);
         item.setOwner(user);
-
-        return ItemMapper.toItemDto(itemRepository.save(item));
+        setItemRequestIfPresent(itemDtoMarker, item);
+        Item newItem = itemRepository.save(item);
+        return ItemMapper.toItemDtoMarker(newItem);
     }
 
     @Override
     @Transactional
-    public ItemDto update(long itemId, ItemRequestDto itemRequestDto, long userId) {
+    public ItemDto update(long itemId, ItemDtoMarker itemRequestDto, long userId) {
         log.debug("Updating item with id: {} for user {}", itemId, userId);
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Item not found"));
         if (item.getOwner().getId() == userId) {
@@ -96,13 +101,13 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemDto> getItemsByUserId(Long userId) {
+    public List<ItemDto> getItemsByUserId(Long userId, Pageable page) {
         log.debug("Getting items by user Id: {}", userId);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format("User with not found")));
 
-        List<Item> items = itemRepository.findByOwner(user, Sort.by("id").ascending());
+        List<Item> items = itemRepository.findByOwner(user, page);
 
         if (items.isEmpty()) {
             throw new NotFoundException(String.format("No items found for user"));
@@ -113,12 +118,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemDto> getItemsBySearch(String text) {
+    public List<ItemDto> getItemsBySearch(String text, Pageable page) {
         log.debug("Getting items by search: {}", text);
         if (text.isBlank()) {
             return Collections.emptyList();
         }
-        List<Item> items = itemRepository.findAllByAvailableTrueAndNameContainingIgnoreCaseOrAvailableTrueAndDescriptionContainingIgnoreCase(text, text); // Поиск Item по тексту
+        List<Item> items = itemRepository.findAllByAvailableTrueAndNameContainingIgnoreCaseOrAvailableTrueAndDescriptionContainingIgnoreCase(text, text, page);
         return items.stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
@@ -146,6 +151,14 @@ public class ItemServiceImpl implements ItemService {
         return CommentMapper.responseDtoOf(comment);
     }
 
+    private void setItemRequestIfPresent(ItemDtoMarker itemDtoMarker, Item item) {
+        Long requestId = itemDtoMarker.getRequestId();
+        if (requestId != null) {
+            ItemRequest request = requestRepository.findById(requestId).orElseThrow(() ->
+                    new NotFoundException("ItemRequest not found"));
+            item.setRequest(request);
+        }
+    }
 
     private void setLastAndNextBookingsForItem(ItemDto itemDto) {
         List<Booking> itemBookings = itemRepository.findById(itemDto.getId())

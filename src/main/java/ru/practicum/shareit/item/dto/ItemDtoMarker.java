@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 
 @Data
 @Builder
-public class ItemRequestDto {
+public class ItemDtoMarker {
     private Long id;
 
     @NotBlank(groups = {Marker.Create.class})
@@ -25,4 +25,6 @@ public class ItemRequestDto {
 
     @NotNull(groups = {Marker.Create.class})
     private Boolean available;
+
+    private Long requestId;
 }

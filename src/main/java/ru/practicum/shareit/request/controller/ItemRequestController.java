@@ -1,10 +1,14 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.request.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.dto.ItemResponseDto;
+import ru.practicum.shareit.request.service.ItemRequestService;
+import ru.practicum.shareit.valid.PageableValidator;
 
+import javax.validation.constraints.Min;
 import java.util.List;
 
 
@@ -20,9 +24,9 @@ public class ItemRequestController {
 
     @PostMapping
     public ItemRequestDto createItemRequest(@RequestHeader(USER_ID) long userId,
-                                            @RequestBody ItemRequestDto itemRequestDto) {
+                                            @RequestBody ItemResponseDto itemResponseDto) {
         log.info("Creating item request from user id {}", userId);
-        return itemRequestService.createRequest(userId, itemRequestDto);
+        return itemRequestService.createRequest(userId, itemResponseDto);
     }
 
     @GetMapping
@@ -33,8 +37,8 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<ItemRequestDto> getAllRequests(@RequestHeader(USER_ID) long userId,
-                                               @RequestParam(required = false) Integer from,
-                                               @RequestParam(required = false) Integer size) {
+                                               @RequestParam(defaultValue = "1") @Min(0) int from,
+                                               @RequestParam(defaultValue = "10") @Min(1) int size) {
         log.info("Getting all requests user id {} from {} size {}", userId, from, size);
         return itemRequestService.getAllRequests(userId, from, size);
     }

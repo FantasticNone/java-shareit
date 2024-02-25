@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,30 +102,31 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDto> getAllByUser(Long userId, BookingState state) {
+    public List<BookingDto> getAllByUser(Long userId, BookingState state, Pageable page) {
         User booker = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User is not found"));
 
+        Pageable pageForBookings = PageRequest.of(page.getPageNumber(), page.getPageSize(), SORT_BY_START_DESC);
         List<Booking> bookings;
 
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findAllByBookerId(userId, SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByBookerId(userId, pageForBookings);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllByBookerIdAndCurrentStatus(userId, LocalDateTime.now(), SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByBookerIdAndCurrentStatus(userId, LocalDateTime.now(), pageForBookings);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findAllByBookerIdAndFutureStatus(userId, LocalDateTime.now(), SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByBookerIdAndFutureStatus(userId, LocalDateTime.now(), pageForBookings);
                 break;
             case PAST:
-                bookings = bookingRepository.findAllByBookerIdAndPastStatus(userId, LocalDateTime.now(), SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByBookerIdAndPastStatus(userId, LocalDateTime.now(), pageForBookings);
                 break;
             case WAITING:
-                bookings = bookingRepository.findAllByBookerIdAndWaitingStatus(userId, BookingStatus.WAITING, SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByBookerIdAndWaitingStatus(userId, BookingStatus.WAITING, pageForBookings);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findAllByBookerIdAndRejectedStatus(userId, Collections.singletonList(BookingStatus.REJECTED), SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByBookerIdAndRejectedStatus(userId, Collections.singletonList(BookingStatus.REJECTED), pageForBookings);
                 break;
             default:
                 throw new BadRequestException("Unknown state: UNSUPPORTED_STATUS");
@@ -132,39 +135,41 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.responseDtoListOf(bookings);
     }
 
+
     @Override
     @Transactional(readOnly = true)
-    public List<BookingDto> getAllByOwner(Long userId, BookingState state) {
+    public List<BookingDto> getAllByOwner(Long userId, BookingState state, Pageable page) {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User is not found"));
+        Pageable pageForBookings = PageRequest.of(page.getPageNumber(), page.getPageSize(), SORT_BY_START_DESC);
 
-        List<Item> userItems = itemRepository.findByOwner(owner, Sort.by(Sort.Direction.ASC, "id"));
-
-        if (userItems.size() < 1) {
-            throw new DataException("User has less than 1, minimum 1 item required");
+        List<Long> userItemsIds = itemRepository.findByOwnerIdWithoutPageable(userId).stream()
+                .map(Item::getId)
+                .collect(Collectors.toList());
+        if (userItemsIds.isEmpty()) {
+            throw new DataException("This method only for users who have >1 items");
         }
-        List<Long> userItemsIds = userItems.stream().map(Item::getId).collect(Collectors.toList());
 
         List<Booking> bookings;
 
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findAllByOwnerItems(userItemsIds, SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByOwnerItems(userItemsIds, pageForBookings);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllByOwnerItemsAndCurrentStatus(userItemsIds, LocalDateTime.now(), SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByOwnerItemsAndCurrentStatus(userItemsIds, LocalDateTime.now(), pageForBookings);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findAllByOwnerItemsAndFutureStatus(userItemsIds, LocalDateTime.now(), SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByOwnerItemsAndFutureStatus(userItemsIds, LocalDateTime.now(), pageForBookings);
                 break;
             case PAST:
-                bookings = bookingRepository.findAllByOwnerItemsAndPastStatus(userItemsIds, LocalDateTime.now(), SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByOwnerItemsAndPastStatus(userItemsIds, LocalDateTime.now(), pageForBookings);
                 break;
             case WAITING:
-                bookings = bookingRepository.findAllByOwnerItemsAndWaitingStatus(userItemsIds, BookingStatus.WAITING, SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByOwnerItemsAndWaitingStatus(userItemsIds, BookingStatus.WAITING, pageForBookings);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findAllByOwnerItemsAndRejectedStatus(userItemsIds, List.of(BookingStatus.REJECTED, BookingStatus.CANCELED), SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByOwnerItemsAndRejectedStatus(userItemsIds, List.of(BookingStatus.REJECTED, BookingStatus.CANCELED), pageForBookings);
                 break;
             default:
                 throw new BadRequestException("Unknown state: UNSUPPORTED_STATUS");
