@@ -12,7 +12,7 @@ import java.util.List;
 public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByOwner(User owner, Pageable pageable);
 
-    @Query( "select i " +
+    @Query("select i " +
             "from Item i " +
             "where i.owner.id = :ownerId")
     List<Item> findByOwnerIdWithoutPageable(Long ownerId);
