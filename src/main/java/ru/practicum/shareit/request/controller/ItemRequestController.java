@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemResponseDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
-import ru.practicum.shareit.valid.PageableValidator;
 
 import javax.validation.constraints.Min;
 import java.util.List;
