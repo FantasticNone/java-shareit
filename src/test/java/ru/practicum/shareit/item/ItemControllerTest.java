@@ -24,10 +24,9 @@ import java.util.List;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @WebMvcTest(controllers = ItemController.class)
 class ItemControllerTest {
@@ -87,10 +86,10 @@ class ItemControllerTest {
 
     }
 
-    /*@Test
+    @Test
     public void testUpdateItem() throws Exception {
 
-        ItemDtoMarker itemRequestDto = ItemDtoMarker.builder()
+        ItemDtoMarker updatedItemDto = ItemDtoMarker.builder()
                 .id(1L)
                 .name("Updated Item Name")
                 .description("Updated Description")
@@ -98,25 +97,26 @@ class ItemControllerTest {
                 .build();
         long userId = 123L;
 
-        ItemDto newItemDto = ItemDto.builder()
+        ItemDto existingItemDto = ItemDto.builder()
                 .id(1L)
                 .name("shovel")
                 .description("shovel for digging")
                 .userId(userId)
                 .build();
 
-        when(itemService.update(newItemDto.getId(), itemRequestDto, userId))
-                .thenReturn(newItemDto);
+        when(itemService.update(updatedItemDto.getId(), updatedItemDto, userId))
+                .thenReturn(existingItemDto);
 
-        mvc.perform(patch("/items/{itemId}", newItemDto.getId())
-                        .header("X-Sharer-User-Id", String.valueOf(2L))
+        mvc.perform(patch("/items/{itemId}", existingItemDto.getId())
+                        .header("X-Sharer-User-Id", String.valueOf(userId))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(newItemDto)))
+                        .content(mapper.writeValueAsString(updatedItemDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(newItemDto.getId()))
-                .andExpect(jsonPath("$.name").value(newItemDto.getName()))
-                .andExpect(jsonPath("$.description").value(newItemDto.getDescription()));
-    }*/
+                .andExpect(jsonPath("$.id").value(updatedItemDto.getId()))
+                .andExpect(jsonPath("$.name").value(existingItemDto.getName()))
+                .andExpect(jsonPath("$.description").value(existingItemDto.getDescription()));
+    }
+
 
     @Test
     void getItemById() throws Exception {

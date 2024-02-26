@@ -244,13 +244,12 @@ public class ItemServiceUnitTest {
 
     @Test
     public void testGetItemsBySearch_TextIsBlank_ReturnsEmptyList() {
-        // Arrange
+
         String searchText = "";
         Pageable page = PageRequest.of(0, 10); // Example page here
 
-        // Act
         List<ItemDto> result = itemService.getItemsBySearch(searchText, page);
-        // Assert
+
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
