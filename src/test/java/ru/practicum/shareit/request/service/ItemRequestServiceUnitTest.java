@@ -1,5 +1,7 @@
 package ru.practicum.shareit.request.service;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,10 +12,12 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemResponseDto;
 import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.dto.mapper.ItemRequestMapper;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,19 +40,55 @@ public class ItemRequestServiceUnitTest {
     @InjectMocks
     private ItemRequestServiceImpl itemRequestService;
 
+    ItemResponseDto itemResponseDto;
+
+    User requester;
+
+    ItemRequest itemRequest;
+    ItemRequest itemRequestSaved;
+
+    @BeforeEach
+    void setUp() {
+
+        requester = User.builder()
+                .id(1L)
+                .name("requester")
+                .email("requester@gmail.com")
+                .build();
+
+        itemResponseDto = ItemResponseDto.builder()
+                .id(1L)
+                .description("I want the magic stick")
+                .build();
+
+        itemRequest = ItemRequest.builder()
+                .created(LocalDateTime.now())
+                .description(itemResponseDto.getDescription())
+                .requester(requester)
+                .build();
+
+        itemRequestSaved = ItemRequest.builder()
+                .id(1L)
+                .created(LocalDateTime.now())
+                .description(itemResponseDto.getDescription())
+                .requester(requester)
+                .build();
+
+    }
+
     @Test
     public void createRequestTest() {
 
-        long userId = 1L;
-        ItemResponseDto itemResponseDto = new ItemResponseDto(1L, "Sample Description");
-        User user = new User();
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        ItemRequest newRequest = new ItemRequest();
-        when(requestRepository.save(any(ItemRequest.class))).thenReturn(newRequest);
+        when(userRepository.findById(requester.getId())).thenReturn(Optional.of(requester));
 
-        ItemRequestDto result = itemRequestService.createRequest(userId, itemResponseDto);
+        when(requestRepository.save(any(ItemRequest.class))).thenReturn(itemRequestSaved);
+
+        ItemRequestDto expected = ItemRequestMapper.toItemRequestDto(itemRequestSaved);
+
+        ItemRequestDto result = itemRequestService.createRequest(requester.getId(), itemResponseDto);
 
         assertNotNull(result);
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
