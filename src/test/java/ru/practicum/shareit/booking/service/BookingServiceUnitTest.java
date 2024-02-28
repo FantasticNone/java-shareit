@@ -16,6 +16,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.mapper.BookingMapper;
 import ru.practicum.shareit.exception.DataException;
+import ru.practicum.shareit.exception.ItemBookingException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BookingServiceUnitTest {
@@ -41,6 +43,9 @@ class BookingServiceUnitTest {
     UserRepository userRepository;
     @Mock
     ItemRepository itemRepository;
+
+    @Mock
+    Item itemMock;
 
     BookingRequestDto bookingRequestDto;
 
@@ -127,14 +132,11 @@ class BookingServiceUnitTest {
         BookingDto expectedDto;
         BookingDto actualDto;
 
-        Mockito
-                .when(userRepository.findById(booker.getId()))
+        when(userRepository.findById(booker.getId()))
                 .thenReturn(Optional.ofNullable(booker));
-        Mockito
-                .when(itemRepository.findById(item.getId()))
+        when(itemRepository.findById(item.getId()))
                 .thenReturn(Optional.ofNullable(item));
-        Mockito
-                .when(bookingRepository.save(booking))
+        when(bookingRepository.save(booking))
                 .thenReturn(bookingSaved);
 
 
@@ -143,6 +145,36 @@ class BookingServiceUnitTest {
 
         assertEquals(expectedDto.getId(), actualDto.getId());
 
+        item.setOwner(booker);
+
+        NotFoundException entityNotFoundException = assertThrows(NotFoundException.class,
+                () -> bookingService.create(bookingRequestDto));
+
+        assertEquals(entityNotFoundException.getMessage(), "Owner can't book his item");
+    }
+
+    @Test
+    void create_whenItemIsNotAvailable() {
+        BookingDto expectedDto;
+        BookingDto actualDto;
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.ofNullable(booker));
+        when(itemRepository.findById(item.getId()))
+                .thenReturn(Optional.ofNullable(item));
+        when(bookingRepository.save(booking))
+                .thenReturn(bookingSaved);
+
+
+        expectedDto = BookingMapper.responseDtoOf(bookingSaved);
+        actualDto = bookingService.create(bookingRequestDto);
+
+        item.setAvailable(false);
+
+        ItemBookingException incorrectItemBookingException = assertThrows(ItemBookingException.class,
+                () -> bookingService.create(bookingRequestDto));
+
+        assertEquals(incorrectItemBookingException.getMessage(), "Item is unavailable");
     }
 
     @Test
@@ -168,8 +200,8 @@ class BookingServiceUnitTest {
         BookingDto expectedResponse;
         BookingDto actualResponse;
 
-        Mockito.when(userRepository.existsById(owner.getId())).thenReturn(true);
-        Mockito.when(bookingRepository.findById(3L)).thenReturn(Optional.of(booking1));
+        when(userRepository.existsById(owner.getId())).thenReturn(true);
+        when(bookingRepository.findById(3L)).thenReturn(Optional.of(booking1));
 
         actualResponse = bookingService.approve(3L, owner.getId(), true);
         booking.setStatus(BookingStatus.APPROVED);
@@ -179,10 +211,27 @@ class BookingServiceUnitTest {
         Assertions.assertEquals(expectedResponse, actualResponse);
     }
 
+    /*@Test
+    void approveBooking_whenUserAndItemExistAndUserIsNotOwner() {
+        User someOtherUser = User.builder()
+                .id(5L)
+                .name("someOtherUser")
+                .email("someOtherUser@gmail.com")
+                .build();
+
+        when(userRepository.existsById(owner.getId())).thenReturn(true);
+        when(bookingRepository.findById(3L)).thenReturn(Optional.of(booking1));
+
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                    () -> bookingService.approve(3L, owner.getId(), true));
+
+            assertEquals("User has no rights to approve booking", exception.getMessage());
+    }*/
+
     @Test
     void getBookingForUserWhenUserIsBooker() {
 
-        Mockito.when(bookingRepository.findById(bookingSaved.getId())).thenReturn(Optional.of(bookingSaved));
+        when(bookingRepository.findById(bookingSaved.getId())).thenReturn(Optional.of(bookingSaved));
 
         BookingDto actualBooking = bookingService.getBooking(bookingSaved.getId(), booker.getId());
 
@@ -195,8 +244,8 @@ class BookingServiceUnitTest {
         List<Booking> expectedBookings = Arrays.asList(bookingSaved, booking1);
         List<BookingDto> actualResponse;
 
-        Mockito.when(userRepository.findById(booker.getId())).thenReturn(Optional.ofNullable(booker));
-        Mockito.when(bookingRepository.findAllByBookerId(booker.getId(), PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "start")))).thenReturn(expectedBookings);
+        when(userRepository.findById(booker.getId())).thenReturn(Optional.ofNullable(booker));
+        when(bookingRepository.findAllByBookerId(booker.getId(), PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "start")))).thenReturn(expectedBookings);
 
         actualResponse = bookingService.getAllByUser(booker.getId(), BookingState.ALL, PageRequest.of(0, 10));
 
@@ -219,13 +268,13 @@ class BookingServiceUnitTest {
                         .available(true).build()
         );
 
-        Mockito.when(userRepository.findById(userWithMultipleItems.getId()))
+        when(userRepository.findById(userWithMultipleItems.getId()))
                 .thenReturn(Optional.of(userWithMultipleItems));
 
-        Mockito.when(itemRepository.findByOwnerIdWithoutPageable(userWithMultipleItems.getId()))
+        when(itemRepository.findByOwnerIdWithoutPageable(userWithMultipleItems.getId()))
                 .thenReturn(userItems);
 
-        Mockito.when(bookingRepository.findAllByOwnerItems(
+        when(bookingRepository.findAllByOwnerItems(
                 Mockito.eq(userItems.stream().map(Item::getId).collect(Collectors.toList())),
                 Mockito.any(Pageable.class)
         )).thenReturn(Collections.singletonList(booking));
@@ -240,14 +289,16 @@ class BookingServiceUnitTest {
     void getAllByOwnerWhenUserHasNoItems() {
         List<Item> userItems = Collections.emptyList();
 
-        Mockito.when(userRepository.findById(userWithNoItems.getId()))
+        when(userRepository.findById(userWithNoItems.getId()))
                 .thenReturn(Optional.of(userWithNoItems));
-        Mockito.when(itemRepository.findByOwnerIdWithoutPageable(userWithNoItems.getId()))
+        when(itemRepository.findByOwnerIdWithoutPageable(userWithNoItems.getId()))
                 .thenReturn(userItems);
 
         DataException exception = assertThrows(DataException.class, () -> bookingService.getAllByOwner(userWithNoItems.getId(), BookingState.ALL, PageRequest.of(0, 10)));
         assertEquals("This method only for users who have >1 items", exception.getMessage());
     }
+
+
 
 
 

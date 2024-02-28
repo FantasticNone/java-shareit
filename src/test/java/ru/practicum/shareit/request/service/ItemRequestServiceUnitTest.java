@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+import ru.practicum.shareit.exception.DataException;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemResponseDto;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,7 +60,7 @@ public class ItemRequestServiceUnitTest {
 
         itemResponseDto = ItemResponseDto.builder()
                 .id(1L)
-                .description("I want the magic stick")
+                .description("I need a motivation")
                 .build();
 
         itemRequest = ItemRequest.builder()
@@ -103,7 +105,9 @@ public class ItemRequestServiceUnitTest {
         List<ItemRequestDto> result = itemRequestService.getUserRequests(userId);
 
         assertNotNull(result);
+        Assertions.assertEquals(itemRequests, result);
     }
+
 
     @Test
     public void getRequestTest() {
@@ -117,7 +121,10 @@ public class ItemRequestServiceUnitTest {
 
         ItemRequestDto result = itemRequestService.getRequest(userId, requestId);
 
+        ItemRequestDto expectedRequest = ItemRequestMapper.toItemRequestDto(itemRequest);
+
         assertNotNull(result);
+        Assertions.assertEquals(expectedRequest, result);
     }
 
     @Test
@@ -128,11 +135,28 @@ public class ItemRequestServiceUnitTest {
         int size = 10;
         User user = new User();
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        List<ItemRequest> itemRequests = new ArrayList<>();
-        when(requestRepository.findAllByRequesterNotOrderByCreatedDesc(user, PageRequest.of(0, 10))).thenReturn(itemRequests);
+        List<ItemRequest> itemRequestsList = new ArrayList<>();
+        when(requestRepository.findAllByRequesterNotOrderByCreatedDesc(user, PageRequest.of(0, 10))).thenReturn(itemRequestsList);
 
         List<ItemRequestDto> result = itemRequestService.getAllRequests(userId, from, size);
+        List<ItemRequestDto> expectedList = ItemRequestMapper.requestListToDto(itemRequestsList);
 
         assertNotNull(result);
+        Assertions.assertEquals(expectedList, result);
+    }
+
+    @Test
+    public void getAllRequestsTestWithInvalidPaginationParams() {
+        long userId = 1L;
+        int from = -1;
+        int size = 10;
+        User user = new User();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        DataException exception = assertThrows(DataException.class, () -> {
+            itemRequestService.getAllRequests(userId, from, size);
+        });
+
+        Assertions.assertEquals("Invalid pagination data", exception.getMessage());
     }
 }

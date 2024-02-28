@@ -105,7 +105,7 @@ public class ItemServiceImpl implements ItemService {
         log.debug("Getting items by user Id: {}", userId);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(String.format("User with not found")));
+                .orElseThrow(() -> new NotFoundException(String.format("User not found")));
 
         List<Item> items = itemRepository.findByOwner(user, page);
 
