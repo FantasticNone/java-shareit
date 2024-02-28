@@ -44,9 +44,6 @@ class BookingServiceUnitTest {
     @Mock
     ItemRepository itemRepository;
 
-    @Mock
-    Item itemMock;
-
     BookingRequestDto bookingRequestDto;
 
     User booker;
@@ -155,8 +152,6 @@ class BookingServiceUnitTest {
 
     @Test
     void create_whenItemIsNotAvailable() {
-        BookingDto expectedDto;
-        BookingDto actualDto;
 
         when(userRepository.findById(booker.getId()))
                 .thenReturn(Optional.ofNullable(booker));
@@ -166,8 +161,8 @@ class BookingServiceUnitTest {
                 .thenReturn(bookingSaved);
 
 
-        expectedDto = BookingMapper.responseDtoOf(bookingSaved);
-        actualDto = bookingService.create(bookingRequestDto);
+        BookingMapper.responseDtoOf(bookingSaved);
+        bookingService.create(bookingRequestDto);
 
         item.setAvailable(false);
 
