@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static ru.practicum.shareit.booking.BookingState.*;
 
 @ExtendWith(MockitoExtension.class)
 class BookingServiceUnitTest {
@@ -44,13 +45,17 @@ class BookingServiceUnitTest {
     @Mock
     ItemRepository itemRepository;
 
+    private static final Pageable PAGE_FOR_BOOKINGS = PageRequest.of(0, 10, Sort.by("start").descending());
+
     BookingRequestDto bookingRequestDto;
 
     User booker;
     User owner;
     User unauthorizedUser;
     Item item;
+    Item item2;
     Booking booking;
+    Booking booking2;
     Booking bookingSaved;
     Booking booking1;
 
@@ -90,12 +95,27 @@ class BookingServiceUnitTest {
                 .description("smth things 'bout thing")
                 .available(true)
                 .build();
+        item2 = Item.builder()
+                .id(2L)
+                .name("thing")
+                .owner(owner)
+                .description("smth things 'bout thing")
+                .available(true)
+                .build();
 
         booking = Booking.builder()
                 .start(bookingRequestDto.getStart())
                 .end(bookingRequestDto.getEnd())
                 .booker(booker)
                 .item(item)
+                .status(BookingStatus.WAITING)
+                .build();
+
+        booking2 = Booking.builder()
+                .start(bookingRequestDto.getStart())
+                .end(bookingRequestDto.getEnd())
+                .booker(booker)
+                .item(item2)
                 .status(BookingStatus.WAITING)
                 .build();
 
@@ -293,12 +313,175 @@ class BookingServiceUnitTest {
         assertEquals("This method only for users who have >1 items", exception.getMessage());
     }
 
+    @Test
+    void getCurrentUserBookings() {
+        List<BookingDto> expectedList;
+        List<BookingDto> actualList;
 
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findAllByBookerIdAndCurrentStatus(anyLong(), any(LocalDateTime.class), any(Pageable.class)))
+                .thenReturn(List.of(bookingSaved));
+        bookingSaved.setBooker(booker);
 
+        expectedList = BookingMapper.responseDtoListOf(List.of(bookingSaved));
+        actualList = bookingService.getAllByUser(booker.getId(), CURRENT, PAGE_FOR_BOOKINGS);
+        assertEquals(expectedList, actualList);
+    }
 
+    @Test
+    void getCurrentOwnerBookings() {
+        List<Long> userItems = List.of(item.getId(), item2.getId());
 
+        when(userRepository.findById(owner.getId()))
+                .thenReturn(Optional.of(owner));
+        when(itemRepository.findByOwnerIdWithoutPageable(owner.getId()))
+                .thenReturn(List.of(item, item2));
+        when(bookingRepository.findAllByOwnerItemsAndCurrentStatus(eq(userItems), any(LocalDateTime.class), eq(PAGE_FOR_BOOKINGS)))
+                .thenReturn(List.of(bookingSaved, booking2));
 
+        List<BookingDto> actualList = bookingService.getAllByOwner(owner.getId(), BookingState.CURRENT, PAGE_FOR_BOOKINGS);
 
+        List<BookingDto> expectedList = BookingMapper.responseDtoListOf(List.of(bookingSaved, booking2));
+
+        assertEquals(expectedList, actualList);
+    }
+
+    @Test
+    void getFutureUserBookings() {
+        List<BookingDto> expectedList;
+        List<BookingDto> actualList;
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findAllByBookerIdAndFutureStatus(anyLong(), any(LocalDateTime.class), any(Pageable.class)))
+                .thenReturn(List.of(bookingSaved));
+        bookingSaved.setBooker(booker);
+
+        expectedList = BookingMapper.responseDtoListOf(List.of(bookingSaved));
+        actualList = bookingService.getAllByUser(booker.getId(), FUTURE, PAGE_FOR_BOOKINGS);
+        assertEquals(expectedList, actualList);
+    }
+
+    @Test
+    void getFutureOwnerBookings() {
+        List<Long> userItems = List.of(item.getId(), item2.getId());
+
+        when(userRepository.findById(owner.getId()))
+                .thenReturn(Optional.of(owner));
+        when(itemRepository.findByOwnerIdWithoutPageable(owner.getId()))
+                .thenReturn(List.of(item, item2));
+        when(bookingRepository.findAllByOwnerItemsAndFutureStatus(eq(userItems), any(LocalDateTime.class), eq(PAGE_FOR_BOOKINGS)))
+                .thenReturn(List.of(bookingSaved, booking2));
+
+        List<BookingDto> actualList = bookingService.getAllByOwner(owner.getId(), FUTURE, PAGE_FOR_BOOKINGS);
+
+        List<BookingDto> expectedList = BookingMapper.responseDtoListOf(List.of(bookingSaved, booking2));
+
+        assertEquals(expectedList, actualList);
+    }
+
+    @Test
+    void getPastUserBookings() {
+        List<BookingDto> expectedList;
+        List<BookingDto> actualList;
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findAllByBookerIdAndPastStatus(anyLong(), any(LocalDateTime.class), any(Pageable.class)))
+                .thenReturn(List.of(bookingSaved));
+        bookingSaved.setBooker(booker);
+
+        expectedList = BookingMapper.responseDtoListOf(List.of(bookingSaved));
+        actualList = bookingService.getAllByUser(booker.getId(), PAST, PAGE_FOR_BOOKINGS);
+        assertEquals(expectedList, actualList);
+    }
+
+    @Test
+    void getPastOwnerBookings() {
+        List<Long> userItems = List.of(item.getId(), item2.getId());
+
+        when(userRepository.findById(owner.getId()))
+                .thenReturn(Optional.of(owner));
+        when(itemRepository.findByOwnerIdWithoutPageable(owner.getId()))
+                .thenReturn(List.of(item, item2));
+        when(bookingRepository.findAllByOwnerItemsAndPastStatus(eq(userItems), any(LocalDateTime.class), eq(PAGE_FOR_BOOKINGS)))
+                .thenReturn(List.of(bookingSaved, booking2));
+
+        List<BookingDto> actualList = bookingService.getAllByOwner(owner.getId(), PAST, PAGE_FOR_BOOKINGS);
+
+        List<BookingDto> expectedList = BookingMapper.responseDtoListOf(List.of(bookingSaved, booking2));
+
+        assertEquals(expectedList, actualList);
+    }
+
+    @Test
+    void getWaitingUserBookings() {
+        List<BookingDto> expectedList;
+        List<BookingDto> actualList;
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findAllByBookerIdAndWaitingStatus(anyLong(), any(BookingStatus.class), any(Pageable.class)))
+                .thenReturn(List.of(bookingSaved));
+        bookingSaved.setBooker(booker);
+
+        expectedList = BookingMapper.responseDtoListOf(List.of(bookingSaved));
+        actualList = bookingService.getAllByUser(booker.getId(), WAITING, PAGE_FOR_BOOKINGS);
+        assertEquals(expectedList, actualList);
+    }
+
+    @Test
+    void getWaitingOwnerBookings() {
+        List<Long> userItems = List.of(item.getId(), item2.getId());
+
+        when(userRepository.findById(owner.getId()))
+                .thenReturn(Optional.of(owner));
+        when(itemRepository.findByOwnerIdWithoutPageable(owner.getId()))
+                .thenReturn(List.of(item, item2));
+        when(bookingRepository.findAllByOwnerItemsAndWaitingStatus(eq(userItems), any(BookingStatus.class), eq(PAGE_FOR_BOOKINGS)))
+                .thenReturn(List.of(bookingSaved, booking2));
+
+        List<BookingDto> actualList = bookingService.getAllByOwner(owner.getId(), WAITING, PAGE_FOR_BOOKINGS);
+
+        List<BookingDto> expectedList = BookingMapper.responseDtoListOf(List.of(bookingSaved, booking2));
+
+        assertEquals(expectedList, actualList);
+    }
+
+    @Test
+    void getRejectedUserBookings() {
+        List<BookingDto> expectedList;
+        List<BookingDto> actualList;
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findAllByBookerIdAndRejectedStatus(anyLong(), anyList(), any(Pageable.class)))
+                .thenReturn(List.of(bookingSaved));
+        bookingSaved.setBooker(booker);
+
+        expectedList = BookingMapper.responseDtoListOf(List.of(bookingSaved));
+        actualList = bookingService.getAllByUser(booker.getId(), REJECTED, PAGE_FOR_BOOKINGS);
+        assertEquals(expectedList, actualList);
+    }
+
+    @Test
+    void getRejectedOwnerBookings() {
+        List<Long> userItems = List.of(item.getId(), item2.getId());
+
+        when(userRepository.findById(owner.getId()))
+                .thenReturn(Optional.of(owner));
+        when(itemRepository.findByOwnerIdWithoutPageable(owner.getId()))
+                .thenReturn(List.of(item, item2));
+        when(bookingRepository.findAllByOwnerItemsAndRejectedStatus(eq(userItems), anyList(), eq(PAGE_FOR_BOOKINGS)))
+                .thenReturn(List.of(bookingSaved, booking2));
+
+        List<BookingDto> actualList = bookingService.getAllByOwner(owner.getId(), REJECTED, PAGE_FOR_BOOKINGS);
+
+        List<BookingDto> expectedList = BookingMapper.responseDtoListOf(List.of(bookingSaved, booking2));
+
+        assertEquals(expectedList, actualList);
+    }
 
 
 
