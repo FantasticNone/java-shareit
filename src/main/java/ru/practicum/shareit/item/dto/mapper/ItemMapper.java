@@ -49,7 +49,7 @@ public class ItemMapper {
         return itemDtoMarker;
     }
 
-    private List<CommentDto> mapCommentEntitiesToDtos(List<Comment> comments) {
+    public List<CommentDto> mapCommentEntitiesToDtos(List<Comment> comments) {
         if (comments != null) {
             return comments.stream()
                     .map(comment -> CommentDto.builder()

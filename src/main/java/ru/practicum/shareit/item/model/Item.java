@@ -15,6 +15,7 @@ import java.util.List;
 @Table(name = "items")
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class Item {
 
     @Id

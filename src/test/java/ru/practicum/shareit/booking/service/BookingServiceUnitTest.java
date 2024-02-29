@@ -483,37 +483,4 @@ class BookingServiceUnitTest {
         assertEquals(expectedList, actualList);
     }
 
-
-
-
-
-
-
-
-
-   /* @Test
-    public void create_InvalidBookingRequestDto_ThrowsException() {
-
-    }
-
-    @Test
-    public void approve_ValidBookingIdAndUserAndApproval_StatusUpdated() {
-        given(userRepository.existsById(1L)).willReturn(true);
-        given(bookingRepository.findById(1L)).willReturn(Optional.of(validBooking));
-        given(validBooking.getItem().getOwner().getId()).willReturn(1L);
-        given(validBooking.getItem().getAvailable()).willReturn(true);
-        given(bookingRepository.save(any(Booking.class))).willReturn(validBooking);
-
-        BookingDto result = bookingService.approve(1L, 1L, true);
-
-        assertNotNull(result);
-        assertEquals(validBooking.getStatus(), BookingStatus.APPROVED);
-
-    }
-
-    @Test
-    public void approve_InvalidBookingId_ThrowsException() {
-
-    }*/
-
 }
