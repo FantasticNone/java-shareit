@@ -35,10 +35,13 @@ public class BookingMapper {
         return bookings.stream().map(BookingMapper::responseDtoOf).collect(Collectors.toList());
     }
 
-    public Booking toBooking(BookingRequestDto bookingRequestDto) {
-        return Booking.builder()
-                .start(bookingRequestDto.getStart())
-                .end(bookingRequestDto.getEnd())
+    public BookingShortDto shortResponseDtoOfTest(Booking booking) {
+        return BookingShortDto.builder()
+                .id(booking.getId())
+                .bookerId(booking.getBooker().getId())
+                .start(booking.getStart())
+                .end(booking.getEnd())
+                .itemId((ItemMapper.toItemDto(booking.getItem())).getId())
                 .build();
     }
 }

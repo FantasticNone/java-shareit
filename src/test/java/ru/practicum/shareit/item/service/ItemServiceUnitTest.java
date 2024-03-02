@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.service;
 
 import org.junit.jupiter.api.Assertions;
 import org.mockito.InjectMocks;
@@ -246,7 +246,7 @@ public class ItemServiceUnitTest {
     public void testGetItemsBySearch_TextIsBlank_ReturnsEmptyList() {
 
         String searchText = "";
-        Pageable page = PageRequest.of(0, 10); // Example page here
+        Pageable page = PageRequest.of(0, 10);
 
         List<ItemDto> result = itemService.getItemsBySearch(searchText, page);
 
