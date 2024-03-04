@@ -10,9 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.request.controller.ItemRequestController;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemResponseDto;
-import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.service.ItemRequestService;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.utils.HttpHeaders;
 
 import java.time.LocalDateTime;
