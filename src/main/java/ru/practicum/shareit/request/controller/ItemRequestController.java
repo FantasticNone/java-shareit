@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemResponseDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
+import ru.practicum.shareit.user.utils.HttpHeaders;
 
-import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 
@@ -19,35 +21,31 @@ public class ItemRequestController {
 
     private final ItemRequestService itemRequestService;
 
-    private static final String USER_ID = "X-Sharer-User-Id";
-
     @PostMapping
-    public ItemRequestDto createItemRequest(@RequestHeader(USER_ID) long userId,
-                                            @RequestBody ItemResponseDto itemResponseDto) {
+    public ItemResponseDto createItemRequest(@RequestHeader(HttpHeaders.USER_ID) long userId,
+                                            @RequestBody ItemRequestDto itemRequestDto) {
         log.info("Creating item request from user id {}", userId);
-        return itemRequestService.createRequest(userId, itemResponseDto);
+        return itemRequestService.createRequest(userId, itemRequestDto);
     }
 
     @GetMapping
-    public List<ItemRequestDto> getUserRequests(@RequestHeader(USER_ID) long userId) {
+    public List<ItemResponseDto> getUserRequests(@RequestHeader(HttpHeaders.USER_ID) long userId) {
         log.info("Getting all user requests user id {}", userId);
         return itemRequestService.getUserRequests(userId);
     }
 
     @GetMapping("/all")
-    public List<ItemRequestDto> getAllRequests(@RequestHeader(USER_ID) long userId,
-                                               @RequestParam(defaultValue = "1") @Min(0) int from,
-                                               @RequestParam(defaultValue = "10") @Min(1) int size) {
+    public List<ItemResponseDto> getAllRequests(@RequestHeader(HttpHeaders.USER_ID) long userId,
+                                               @PositiveOrZero @RequestParam(defaultValue = "0") Integer from,
+                                               @Positive @RequestParam(defaultValue = "10") Integer size) {
         log.info("Getting all requests user id {} from {} size {}", userId, from, size);
         return itemRequestService.getAllRequests(userId, from, size);
     }
 
     @GetMapping("/{requestId}")
-    public ItemRequestDto getItemRequest(@RequestHeader(USER_ID) long userId,
+    public ItemResponseDto getItemRequest(@RequestHeader(HttpHeaders.USER_ID) long userId,
                                          @PathVariable long requestId) {
         log.info("Getting item request id {} from user id {}", requestId, userId);
         return itemRequestService.getRequest(userId, requestId);
     }
-
-
 }

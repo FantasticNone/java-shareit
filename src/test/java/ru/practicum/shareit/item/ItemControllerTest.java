@@ -17,7 +17,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoMarker;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.valid.PageableValidator;
+import ru.practicum.shareit.user.utils.HttpHeaders;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -37,8 +37,6 @@ class ItemControllerTest {
     private MockMvc mvc;
     @MockBean
     private ItemService itemService;
-    @MockBean
-    private PageableValidator pageableValidator;
 
     ItemDto itemRequestDto;
     ItemDto itemResponseDto;
@@ -76,7 +74,7 @@ class ItemControllerTest {
         when(itemService.create(itemRequestDto, 1L)).thenReturn(itemRequestDto);
         mvc.perform(post("/items")
                         .content(mapper.writeValueAsString(itemRequestDto))
-                        .header("X-Sharer-User-Id", 1L)
+                        .header(HttpHeaders.USER_ID, 1L)
                         .contentType("application/json"))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -108,7 +106,7 @@ class ItemControllerTest {
                 .thenReturn(existingItemDto);
 
         mvc.perform(patch("/items/{itemId}", existingItemDto.getId())
-                        .header("X-Sharer-User-Id", String.valueOf(userId))
+                        .header(HttpHeaders.USER_ID, String.valueOf(userId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(updatedItemDto)))
                 .andExpect(status().isOk())
@@ -128,7 +126,7 @@ class ItemControllerTest {
                 .thenReturn(itemResponseDto);
 
         mvc.perform(get("/items/{itemId}", itemResponseDto.getId())
-                        .header("X-Sharer-User-Id", String.valueOf(userId)))
+                        .header(HttpHeaders.USER_ID, String.valueOf(userId)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(itemResponseDto.getId()))
                 .andExpect(jsonPath("$.name").value(itemResponseDto.getName()));
@@ -156,7 +154,7 @@ class ItemControllerTest {
                 .thenReturn(expectedList);
 
         mvc.perform(get("/items")
-                        .header("X-Sharer-User-Id", String.valueOf(userId)))
+                        .header(HttpHeaders.USER_ID, String.valueOf(userId)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(itemResponseDto.getId()))
                 .andExpect(jsonPath("$[1].id").value(newItemResponseDto.getId()))
@@ -175,7 +173,7 @@ class ItemControllerTest {
                 .thenReturn(List.of(itemResponseDto));
 
         mvc.perform(get("/items/search")
-                        .header("X-Sharer-User-Id", String.valueOf(userId))
+                        .header(HttpHeaders.USER_ID, String.valueOf(userId))
                         .param("text", "drill"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(itemResponseDto.getId()))
@@ -204,7 +202,7 @@ class ItemControllerTest {
                 .thenReturn(commentResponseDto);
 
         mvc.perform(post("/items/{itemId}/comment", itemResponseDto.getId())
-                        .header("X-Sharer-User-Id", String.valueOf(owner.getId()))
+                        .header(HttpHeaders.USER_ID, String.valueOf(owner.getId()))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(commentRequestDto)))

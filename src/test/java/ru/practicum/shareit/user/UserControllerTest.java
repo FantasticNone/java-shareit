@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -14,9 +15,13 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
+
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,13 +39,21 @@ class UserControllerTest {
 
     UserDto userDto;
 
+    UserDto userDto2;
+
     @BeforeEach
     void setUp() {
         userDto = UserDto.builder()
                 .id(1L)
-                .name("John Doe") // Provide a valid name
-                .email("johndoe@example.com") // Provide a valid email
+                .name("John Doe")
+                .email("johndoe@example.com")
                 .build();
+
+        userDto2 = UserDto.builder()
+                        .id(2)
+                        .name("User 2")
+                        .email("email2@email.com")
+                        .build();
     }
 
     @Test
@@ -54,6 +67,39 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.id").value(userDto.getId()))
                 .andExpect(jsonPath("$.name").value(userDto.getName()))
                 .andExpect(jsonPath("$.email").value(userDto.getEmail()));
+    }
+
+    @SneakyThrows
+    @Test
+    void createUser_whenNotValidName_Expect400BadRequest() {
+
+        List<UserDto> users = new ArrayList<>();
+        users.add(userDto);
+        users.add(userDto2);
+
+        userDto.setName("   ");
+        mvc.perform(post("/users")
+                        .content(mapper.writeValueAsString(userDto))
+                        .contentType("application/json"))
+                .andExpect(status().isBadRequest());
+        verify(userService, never()).create(userDto);
+    }
+
+    @SneakyThrows
+    @Test
+    void createUser_whenNotValidEmail_Expect400BadRequest() {
+
+        List<UserDto> users = new ArrayList<>();
+        users.add(userDto);
+        users.add(userDto2);
+
+        userDto.setEmail("mail");
+
+        mvc.perform(post("/users")
+                        .content(mapper.writeValueAsString(userDto))
+                        .contentType("application/json"))
+                .andExpect(status().isBadRequest());
+        verify(userService, never()).create(userDto);
     }
 
     @Test
@@ -112,8 +158,7 @@ class UserControllerTest {
         mvc.perform(delete("/users/{userId}", userDto.getId()))
                 .andExpect(status().isOk());
 
-        Mockito
-                .verify(userService, Mockito.times(1))
+        verify(userService, Mockito.times(1))
                 .delete(userDto.getId());
     }
 }

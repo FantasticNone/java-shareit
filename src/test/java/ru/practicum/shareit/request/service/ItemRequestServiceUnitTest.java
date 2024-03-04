@@ -42,7 +42,7 @@ public class ItemRequestServiceUnitTest {
     @InjectMocks
     private ItemRequestServiceImpl itemRequestService;
 
-    ItemResponseDto itemResponseDto;
+    ItemRequestDto itemRequestDto;
 
     User requester;
 
@@ -58,21 +58,21 @@ public class ItemRequestServiceUnitTest {
                 .email("requester@gmail.com")
                 .build();
 
-        itemResponseDto = ItemResponseDto.builder()
+        itemRequestDto = ItemRequestDto.builder()
                 .id(1L)
                 .description("I need a motivation")
                 .build();
 
         itemRequest = ItemRequest.builder()
                 .created(LocalDateTime.now())
-                .description(itemResponseDto.getDescription())
+                .description(itemRequestDto.getDescription())
                 .requester(requester)
                 .build();
 
         itemRequestSaved = ItemRequest.builder()
                 .id(1L)
                 .created(LocalDateTime.now())
-                .description(itemResponseDto.getDescription())
+                .description(itemRequestDto.getDescription())
                 .requester(requester)
                 .build();
 
@@ -85,9 +85,9 @@ public class ItemRequestServiceUnitTest {
 
         when(requestRepository.save(any(ItemRequest.class))).thenReturn(itemRequestSaved);
 
-        ItemRequestDto expected = ItemRequestMapper.toItemRequestDto(itemRequestSaved);
+        ItemResponseDto expected = ItemRequestMapper.toItemResponseDto(itemRequestSaved);
 
-        ItemRequestDto result = itemRequestService.createRequest(requester.getId(), itemResponseDto);
+        ItemResponseDto result = itemRequestService.createRequest(requester.getId(), itemRequestDto);
 
         assertNotNull(result);
         Assertions.assertEquals(expected, result);
@@ -102,7 +102,7 @@ public class ItemRequestServiceUnitTest {
         List<ItemRequest> itemRequests = new ArrayList<>();
         when(requestRepository.findAllByRequesterOrderByCreatedDesc(user)).thenReturn(itemRequests);
 
-        List<ItemRequestDto> result = itemRequestService.getUserRequests(userId);
+        List<ItemResponseDto> result = itemRequestService.getUserRequests(userId);
 
         assertNotNull(result);
         Assertions.assertEquals(itemRequests, result);
@@ -119,9 +119,9 @@ public class ItemRequestServiceUnitTest {
         ItemRequest itemRequest = new ItemRequest();
         when(requestRepository.findById(requestId)).thenReturn(Optional.of(itemRequest));
 
-        ItemRequestDto result = itemRequestService.getRequest(userId, requestId);
+        ItemResponseDto result = itemRequestService.getRequest(userId, requestId);
 
-        ItemRequestDto expectedRequest = ItemRequestMapper.toItemRequestDto(itemRequest);
+        ItemResponseDto expectedRequest = ItemRequestMapper.toItemResponseDto(itemRequest);
 
         assertNotNull(result);
         Assertions.assertEquals(expectedRequest, result);
@@ -138,8 +138,8 @@ public class ItemRequestServiceUnitTest {
         List<ItemRequest> itemRequestsList = new ArrayList<>();
         when(requestRepository.findAllByRequesterNotOrderByCreatedDesc(user, PageRequest.of(0, 10))).thenReturn(itemRequestsList);
 
-        List<ItemRequestDto> result = itemRequestService.getAllRequests(userId, from, size);
-        List<ItemRequestDto> expectedList = ItemRequestMapper.requestListToDto(itemRequestsList);
+        List<ItemResponseDto> result = itemRequestService.getAllRequests(userId, from, size);
+        List<ItemResponseDto> expectedList = ItemRequestMapper.requestListToDto(itemRequestsList);
 
         assertNotNull(result);
         Assertions.assertEquals(expectedList, result);

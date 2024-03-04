@@ -33,7 +33,7 @@ class ItemRequestMapperTest {
             .created(localDateTime)
             .build();
 
-    ItemResponseDto itemResponseDto = ItemResponseDto.builder()
+    ItemRequestDto itemRequestDto = ItemRequestDto.builder()
             .id(1L)
             .description(itemRequest.getDescription())
             .build();
@@ -44,11 +44,11 @@ class ItemRequestMapperTest {
         ItemRequest actual;
 
         expected = ItemRequest.builder()
-                .id(itemResponseDto.getId())
-                .description(itemResponseDto.getDescription())
+                .id(itemRequestDto.getId())
+                .description(itemRequestDto.getDescription())
                 .build();
 
-        actual = ItemRequestMapper.toItemRequest(itemResponseDto);
+        actual = ItemRequestMapper.toItemRequest(itemRequestDto);
 
         Assertions.assertEquals(expected.getDescription(), actual.getDescription()
 
@@ -57,27 +57,27 @@ class ItemRequestMapperTest {
 
     @Test
     void toItemRequestDto() {
-        ItemRequestDto expectedDto;
-        ItemRequestDto actualDto;
+        ItemResponseDto expectedDto;
+        ItemResponseDto actualDto;
 
-        expectedDto = ItemRequestDto.builder()
+        expectedDto = ItemResponseDto.builder()
                 .id(itemRequest.getId())
                 .items(List.of())
                 .description(itemRequest.getDescription())
                 .created(localDateTime)
                 .build();
 
-        actualDto = ItemRequestMapper.toItemRequestDto(itemRequest);
+        actualDto = ItemRequestMapper.toItemResponseDto(itemRequest);
 
         Assertions.assertEquals(expectedDto, actualDto);
     }
 
     @Test
     void requestListToDto() {
-        List<ItemRequestDto> expectedList;
-        List<ItemRequestDto> actualList;
+        List<ItemResponseDto> expectedList;
+        List<ItemResponseDto> actualList;
 
-        ItemRequestDto correctDto = ItemRequestDto.builder()
+        ItemResponseDto correctDto = ItemResponseDto.builder()
                 .id(itemRequest.getId())
                 .items(List.of())
                 .description(itemRequest.getDescription())

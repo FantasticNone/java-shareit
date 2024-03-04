@@ -18,7 +18,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.user.dto.mapper.UserMapper;
-import ru.practicum.shareit.valid.PageableValidator;
+import ru.practicum.shareit.user.utils.HttpHeaders;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,9 +40,6 @@ class BookingControllerTest {
 
     @Mock
     private BookingRepository bookingRepository;
-
-    @MockBean
-    PageableValidator pageableValidator;
 
     @Autowired
     private MockMvc mvc;
@@ -101,12 +98,48 @@ class BookingControllerTest {
         when(bookingService.create(bookingRequestDto)).thenReturn(bookingDto);
 
         mvc.perform(post("/bookings")
-                        .header("X-Sharer-User-Id", 1L)
+                        .header(HttpHeaders.USER_ID, 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").value(bookingDto.getId()))
                 .andReturn();
+    }
+
+    @SneakyThrows
+    @Test
+    void createBooking_whenStartIsNull_thenBadRequest() {
+        when(bookingService.create(bookingRequestDto)).thenReturn(bookingDto);
+
+        bookingDto.setStart(null);
+        mvc.perform(post("/bookings")
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .contentType("application/json"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @SneakyThrows
+    @Test
+    void createBooking_whenEndIsNull_thenBadRequest() {
+        when(bookingService.create(bookingRequestDto)).thenReturn(bookingDto);
+
+        bookingDto.setEnd(null);
+        mvc.perform(post("/bookings")
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .contentType("application/json"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @SneakyThrows
+    @Test
+    void createBooking_whenStartEqualsEnd_thenBadRequest() {
+        when(bookingService.create(bookingRequestDto)).thenReturn(bookingDto);
+
+        bookingDto.setEnd(bookingDto.getStart());
+        mvc.perform(post("/bookings")
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .contentType("application/json"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -124,7 +157,7 @@ class BookingControllerTest {
                 .thenReturn(approvedBooking);
 
         mvc.perform(patch("/bookings/{bookingId}", bookingDto.getId())
-                        .header("X-Sharer-User-Id", owner.getId())
+                        .header(HttpHeaders.USER_ID, owner.getId())
                         .param("approved", String.valueOf(true)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
@@ -139,7 +172,7 @@ class BookingControllerTest {
         long userId = 1L;
         when(bookingService.getBooking(bookingId, userId)).thenReturn(bookingDto);
         String result = mvc.perform(get("/bookings/{bookingId}", bookingId)
-                        .header("X-Sharer-User-Id", userId)
+                        .header(HttpHeaders.USER_ID, userId)
                         .contentType("application/json"))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -169,7 +202,7 @@ class BookingControllerTest {
                 .thenReturn(expectedList);
 
         mvc.perform(get("/bookings")
-                        .header("X-Sharer-User-Id", booker.getId())
+                        .header(HttpHeaders.USER_ID, booker.getId())
                         .param("state", "ALL")
                         .param("from", "0")
                         .param("size", "10"))
@@ -199,7 +232,7 @@ class BookingControllerTest {
                 .thenReturn(expectedList);
 
         mvc.perform(get("/bookings/owner")
-                        .header("X-Sharer-User-Id", booker.getId())
+                        .header(HttpHeaders.USER_ID, booker.getId())
                         .param("state", "ALL")
                         .param("from", String.valueOf(0))
                         .param("size", String.valueOf(10)))

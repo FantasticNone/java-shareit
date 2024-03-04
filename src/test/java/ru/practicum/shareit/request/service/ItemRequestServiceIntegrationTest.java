@@ -34,11 +34,11 @@ public class ItemRequestServiceIntegrationTest {
     @Test
     public void createRequestTest() {
         long userId = 1L;
-        ItemResponseDto itemResponseDto = new ItemResponseDto(1L, "Sample Description");
+        ItemRequestDto itemRequestDto = new ItemRequestDto(1L, "Sample Description");
         User user = new User(1L, "user", "email@gmail.com");
         userRepository.save(user);
 
-        ItemRequestDto result = itemRequestService.createRequest(userId, itemResponseDto);
+        ItemResponseDto result = itemRequestService.createRequest(userId, itemRequestDto);
 
         assertEquals("Sample Description", result.getDescription());
 
@@ -51,7 +51,7 @@ public class ItemRequestServiceIntegrationTest {
         User user = new User(1L, "user", "email@gmail.com");
         userRepository.save(user);
 
-        List<ItemRequestDto> result = itemRequestService.getUserRequests(userId);
+        List<ItemResponseDto> result = itemRequestService.getUserRequests(userId);
 
         assertEquals(0, result.size());
     }
@@ -72,7 +72,7 @@ public class ItemRequestServiceIntegrationTest {
         itemRequest.setCreated(LocalDateTime.now());
         ItemRequest savedRequest = requestRepository.save(itemRequest);
 
-        ItemRequestDto result = itemRequestService.getRequest(userId, savedRequest.getId());
+        ItemResponseDto result = itemRequestService.getRequest(userId, savedRequest.getId());
 
         assertEquals(requestId, result.getId());
     }
@@ -86,7 +86,7 @@ public class ItemRequestServiceIntegrationTest {
         User user = new User(1L, "user", "email@gmail.com");
         userRepository.save(user);
 
-        List<ItemRequestDto> result = itemRequestService.getAllRequests(userId, from, size);
+        List<ItemResponseDto> result = itemRequestService.getAllRequests(userId, from, size);
 
         assertEquals(0, result.size());
     }

@@ -37,15 +37,15 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     @Transactional
-    public ItemRequestDto createRequest(long userId, ItemResponseDto itemResponseDto) {
+    public ItemResponseDto createRequest(long userId, ItemRequestDto itemRequestDto) {
         User user = getUserById(userId);
-        ItemRequest newRequest = createNewRequest(user, itemResponseDto);
-        return saveAndGetItemRequestDto(newRequest);
+        ItemRequest newRequest = createNewRequest(user, itemRequestDto);
+        return saveAndGetItemResponseDto(newRequest);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemRequestDto> getUserRequests(long userId) {
+    public List<ItemResponseDto> getUserRequests(long userId) {
         User user = getUserById(userId);
         List<ItemRequest> itemRequests = requestRepository.findAllByRequesterOrderByCreatedDesc(user);
         Map<ItemRequest, List<Item>> itemsMap = getItemsMap(itemRequests);
@@ -54,21 +54,21 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     @Transactional(readOnly = true)
-    public ItemRequestDto getRequest(Long userId, Long requestId) {
+    public ItemResponseDto getRequest(Long userId, Long requestId) {
         validateUserExists(userId);
         ItemRequest itemRequest = requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Item request not found"));
         List<ItemDtoMarker> itemDtoMarker = itemRepository.findAllByRequestInOrderById(List.of(itemRequest)).stream()
                 .map(ItemMapper::toItemDtoMarker)
                 .collect(Collectors.toList());
-        ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequest);
-        itemRequestDto.setItems(itemDtoMarker);
-        return itemRequestDto;
+        ItemResponseDto itemResponseDto = ItemRequestMapper.toItemResponseDto(itemRequest);
+        itemResponseDto.setItems(itemDtoMarker);
+        return itemResponseDto;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemRequestDto> getAllRequests(Long userId, Integer from, Integer size) {
+    public List<ItemResponseDto> getAllRequests(Long userId, Integer from, Integer size) {
         User user = getUserById(userId);
         validatePaginationParams(from, size);
         Pageable page = createPageable(from, size);
@@ -82,15 +82,15 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
-    private ItemRequest createNewRequest(User user, ItemResponseDto itemResponseDto) {
-        ItemRequest newRequest = ItemRequestMapper.toItemRequest(itemResponseDto);
+    private ItemRequest createNewRequest(User user, ItemRequestDto itemRequestDto) {
+        ItemRequest newRequest = ItemRequestMapper.toItemRequest(itemRequestDto);
         newRequest.setCreated(LocalDateTime.now());
         newRequest.setRequester(user);
         return requestRepository.save(newRequest);
     }
 
-    private ItemRequestDto saveAndGetItemRequestDto(ItemRequest newRequest) {
-        return toItemRequestDto(newRequest);
+    private ItemResponseDto saveAndGetItemResponseDto(ItemRequest newRequest) {
+        return toItemResponseDto(newRequest);
     }
 
     private Map<ItemRequest, List<Item>> getItemsMap(List<ItemRequest> itemRequests) {
@@ -109,15 +109,15 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         return PageRequest.of(pageNumber, size);
     }
 
-    private List<ItemRequestDto> mapToItemRequestDtos(List<ItemRequest> itemRequests, Map<ItemRequest, List<Item>> itemsMap) {
+    private List<ItemResponseDto> mapToItemRequestDtos(List<ItemRequest> itemRequests, Map<ItemRequest, List<Item>> itemsMap) {
         return itemRequests.stream().map(request -> {
             List<ItemDtoMarker> itemDtoMarkers = itemsMap.getOrDefault(request, Collections.emptyList())
                     .stream()
                     .map(ItemMapper::toItemDtoMarker)
                     .collect(Collectors.toList());
-            ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(request);
-            itemRequestDto.setItems(itemDtoMarkers);
-            return itemRequestDto;
+            ItemResponseDto itemResponseDto = ItemRequestMapper.toItemResponseDto(request);
+            itemResponseDto.setItems(itemDtoMarkers);
+            return itemResponseDto;
         }).collect(Collectors.toList());
     }
 

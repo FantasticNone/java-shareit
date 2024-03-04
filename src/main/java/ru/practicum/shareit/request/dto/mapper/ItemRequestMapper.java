@@ -10,15 +10,15 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class ItemRequestMapper {
-    public ItemRequest toItemRequest(ItemResponseDto itemResponseDto) {
+    public ItemRequest toItemRequest(ItemRequestDto itemRequestDto) {
         return ItemRequest
                 .builder()
-                .description(itemResponseDto.getDescription())
+                .description(itemRequestDto.getDescription())
                 .build();
     }
 
-    public ItemRequestDto toItemRequestDto(ItemRequest itemRequest) {
-        return ItemRequestDto
+    public ItemResponseDto toItemResponseDto(ItemRequest itemRequest) {
+        return ItemResponseDto
                 .builder()
                 .id(itemRequest.getId())
                 .description(itemRequest.getDescription())
@@ -27,7 +27,7 @@ public class ItemRequestMapper {
                 .build();
     }
 
-    public static List<ItemRequestDto> requestListToDto(List<ItemRequest> itemRequests) {
-        return itemRequests.stream().map(ItemRequestMapper::toItemRequestDto).collect(Collectors.toList());
+    public List<ItemResponseDto> requestListToDto(List<ItemRequest> itemRequests) {
+        return itemRequests.stream().map(ItemRequestMapper::toItemResponseDto).collect(Collectors.toList());
     }
 }
