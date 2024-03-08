@@ -66,17 +66,10 @@ class ItemRequestControllerTest {
                 .description("Test Description")
                 .build();
 
-        ItemResponseDto itemResponseDto = ItemResponseDto.builder()
-                .id(1L)
-                .description("Test Description")
-                .created(LocalDateTime.now())
-                .items(Collections.emptyList())
-                .build();
-
         itemRequestDto.setDescription(" ");
         long userId = 1L;
         mockMvc.perform(post("/requests")
-                        .content(mapper.writeValueAsString(itemResponseDto))
+                        .content(mapper.writeValueAsString(itemRequestDto))
                         .header(HttpHeaders.USER_ID, userId)
                         .contentType("application/json"))
                 .andExpect(status().isBadRequest());

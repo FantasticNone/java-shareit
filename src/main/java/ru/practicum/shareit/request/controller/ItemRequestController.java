@@ -2,12 +2,14 @@ package ru.practicum.shareit.request.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemResponseDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.user.utils.HttpHeaders;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
+@Validated
 @Slf4j
 public class ItemRequestController {
 
@@ -23,7 +26,7 @@ public class ItemRequestController {
 
     @PostMapping
     public ItemResponseDto createItemRequest(@RequestHeader(HttpHeaders.USER_ID) long userId,
-                                            @RequestBody ItemRequestDto itemRequestDto) {
+                                             @Valid @RequestBody ItemRequestDto itemRequestDto) {
         log.info("Creating item request from user id {}", userId);
         return itemRequestService.createRequest(userId, itemRequestDto);
     }
