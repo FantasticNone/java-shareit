@@ -12,8 +12,6 @@ import ru.practicum.shareit.utils.HttpHeaders;
 
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
