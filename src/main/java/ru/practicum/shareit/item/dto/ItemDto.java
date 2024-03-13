@@ -31,4 +31,6 @@ public class ItemDto {
     @Nullable
     private List<CommentDto> comments;
 
+    private Long requestId;
+
 }
