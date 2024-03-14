@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.lang.Nullable;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Builder
 @Data
+@EqualsAndHashCode
 public class ItemDto {
 
     private Long id;

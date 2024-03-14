@@ -36,15 +36,15 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<ItemResponseDto> getAllRequests(@RequestHeader(HttpHeaders.USER_ID) long userId,
-                                               @RequestParam(defaultValue = "0") Integer from,
-                                               @RequestParam(defaultValue = "10") Integer size) {
+                                                @RequestParam(defaultValue = "0") Integer from,
+                                                @RequestParam(defaultValue = "10") Integer size) {
         log.info("Getting all requests user id {} from {} size {}", userId, from, size);
         return itemRequestService.getAllRequests(userId, from, size);
     }
 
     @GetMapping("/{requestId}")
     public ItemResponseDto getItemRequest(@RequestHeader(HttpHeaders.USER_ID) long userId,
-                                         @PathVariable long requestId) {
+                                          @PathVariable long requestId) {
         log.info("Getting item request id {} from user id {}", requestId, userId);
         return itemRequestService.getRequest(userId, requestId);
     }

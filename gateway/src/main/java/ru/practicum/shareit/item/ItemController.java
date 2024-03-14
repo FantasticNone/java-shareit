@@ -18,6 +18,7 @@ import javax.validation.constraints.PositiveOrZero;
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class ItemController {
     private final ItemClient itemClient;
 
@@ -35,7 +36,7 @@ public class ItemController {
                                              @RequestBody ItemDtoMarker itemRequestDto,
                                              @RequestHeader(HttpHeaders.USER_ID) long userId) {
         log.info("Update item id {}", itemId);
-        return itemClient.update(itemId, userId, itemRequestDto);
+        return itemClient.update(itemId, itemRequestDto, userId);
     }
 
     @GetMapping("/{itemId}")

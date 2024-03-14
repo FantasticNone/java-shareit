@@ -66,7 +66,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.email").value(userDto.getEmail()));
     }
 
-   /*@SneakyThrows
+    /*@SneakyThrows
     @Test
     void createUser_whenNotValidName_Expect400BadRequest() {
 
@@ -82,7 +82,7 @@ class UserControllerTest {
         verify(userService, never()).create(userDto);
     }
 
-   @SneakyThrows
+    @SneakyThrows
     @Test
     void createUser_whenNotValidEmail_Expect400BadRequest() {
 
