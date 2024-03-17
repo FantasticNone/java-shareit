@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentRequestDto;
@@ -13,8 +14,9 @@ import ru.practicum.shareit.utils.Marker;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+import java.util.List;
 
-@RestController
+@Controller
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
@@ -54,13 +56,17 @@ public class ItemController {
     @GetMapping("/search")
     public ResponseEntity<Object> searchItem(@PositiveOrZero @RequestParam(defaultValue = "0") Integer from,
                                              @Positive @RequestParam(defaultValue = "10") Integer size,
-                                             String text) {
+                                             @RequestParam String text) {
         log.info("Getting items by search text: {}", text);
-        return itemClient.search(text, from, size);
+        if (text.isBlank()) {
+            return ResponseEntity.ok(List.of());
+        } else {
+            return itemClient.search(text, from, size);
+        }
     }
 
     @PostMapping("/{itemId}/comment")
-    public ResponseEntity<Object> postComment(@RequestHeader(name = "X-Sharer-User-Id") long userId,
+    public ResponseEntity<Object> postComment(@RequestHeader(HttpHeaders.USER_ID) long userId,
                                               @PathVariable long itemId,
                                               @Valid @RequestBody CommentRequestDto commentRequestDto) {
         log.info("Post comment userid {} itemid {}", userId, itemId);

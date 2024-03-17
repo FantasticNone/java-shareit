@@ -25,4 +25,11 @@ public class ErrorHandler {
         log.debug("Получен статус 400 Bad Request {}", e.getMessage(), e);
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleThrowable(final Throwable e) {
+        log.error("Получен статус 500 Internal Server Error {}", e.getMessage(), e);
+        return new ErrorResponse("Internal Server Error");
+    }
 }
